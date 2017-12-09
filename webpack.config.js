@@ -4,7 +4,7 @@ var buildPath = path.join(__dirname, 'dist');
 
 module.exports = {
   context: srcPath,
-  entry: path.join(srcPath, 'js', 'client.js'),
+  entry: ['babel-polyfill', path.join(srcPath, 'js', 'client.js')],
   output: {
     path: buildPath,
     filename: 'bundle.js'
@@ -12,12 +12,10 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /\.jsx?$/,
+        test: /\.(js|jsx)$/,
         exclude: /(node_modules|bower_components)/,
-        loader: 'babel',
-        query: {
-          presets: ['react', 'es2015']
-        }
+        loaders: ['babel-loader'],
+        include: srcPath
       }
     ]
   }

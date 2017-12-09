@@ -1,8 +1,7 @@
 {
   "name": "victory-tutorial",
   "version": "1.0.0",
-  "description":
-    "A tutorial for Victory used with the Getting Started guide in Victory Docs.",
+  "description": "A tutorial for Victory used with the Getting Started guide in Victory Docs.",
   "main": "webpack.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,8 +20,13 @@
   "devDependencies": {
     "babel-core": "^6.13.2",
     "babel-loader": "^6.2.4",
+    "babel-plugin-react-transform": "^3.0.0",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-es2015": "^6.13.2",
     "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-runtime": "^6.26.0",
+    "lodash": "^4.17.4",
     "react": "^15.3.0",
     "react-dom": "^15.3.0",
     "webpack": "^1.13.1",
