@@ -1,21 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
+import moment from 'moment';
 import {
   VictoryChart,
   VictoryVoronoiContainer,
-  VictoryCursorContainer,
   VictoryTheme,
-  VictoryTooltip,
   VictoryAxis,
   VictoryLine,
-  Flyout,
   Line
 } from 'victory';
+import axios from 'axios';
 
-class CrossLines extends React.Component {
+class CrossLine extends React.Component {
   render() {
-    // console.log('render', this.props);
+    console.log('rendering', this.props);
     const { height, width, padding } = this.props.theme.chart;
     return (
       <svg>
@@ -28,85 +27,68 @@ class CrossLines extends React.Component {
             stroke: 'red'
           }}
         />
-        <Line
-          x1={padding}
-          x2={width - padding}
-          y1={this.props.y}
-          y2={this.props.y}
-          style={{
-            stroke: 'green'
-          }}
-        />
       </svg>
     );
   }
 }
 
-class CursorLine extends React.Component {
-  render() {
-    return (
-      <Line
-        x1={this.props.x1}
-        x2={this.props.x1}
-        y1={this.props.y1}
-        y2={this.props.y2}
-        style={{
-          stroke: 'red'
-        }}
-      />
-    );
-  }
-}
-
-const data = [
-  { x: 0, y: 0 },
-  { x: 1, y: 1 },
-  { x: 2, y: 2 },
-  { x: 3, y: 3 },
-  { x: 4, y: 4 },
-  { x: 5, y: 5 }
-];
-
 class Main extends React.Component {
   state = {
-    dataToDisplay: ''
+    dataToDisplay: '',
+    priceData: []
+  };
+
+  componentDidMount = async () => {
+    const yesterday = moment()
+      .add(-1, 'days')
+      .valueOf();
+    const today = moment().valueOf();
+    const { data: coinData } = await axios.get(`/api/coininfo`, {
+      params: {
+        coin: 'bitcoin',
+        start: yesterday,
+        end: today
+      }
+    });
+    const priceData = _.map(coinData.price_usd, price => {
+      return { x: price[0], y: price[1] };
+    });
+
+    this.setState({
+      priceData
+    });
   };
 
   render() {
+    const { priceData } = this.state;
+    if (priceData.length === 0) {
+      return <div />;
+    }
+
     return (
-      <div style={{ width: '80%', height: '80%' }}>
+      <div style={{ width: '100%', height: '100%' }}>
         <h3>{this.state.dataToDisplay}</h3>
         <VictoryChart
-          domainPadding={{ x: [1, 1], y: [1, 1] }}
           theme={VictoryTheme.material}
           containerComponent={
-            <VictoryCursorContainer
-              cursorLabel={d => `${d.x}, ${d.y}`}
-              cursorComponent={<CursorLine />}
-              onCursorChange={(value, props) => {
-                if (value) {
-                  _.forEach(data, (val, key) => {
-                    console.log(
-                      'inside',
-                      val.x,
-                      val.y,
-                      key,
-                      Math.round(value.x)
-                    );
-                    if (val.x === Math.round(value.x)) {
-                      this.setState({
-                        dataToDisplay: `${val.x} ${val.y}`
-                      });
-                    }
-                  });
-                }
+            <VictoryVoronoiContainer
+              voronoiDimension="x"
+              labels={d => `x: ${d.x} y: ${d.y}`}
+              labelComponent={<CrossLine />}
+              onActivated={(points, props) => {
+                _.forEach(this.state.priceData, (dataPoint, key) => {
+                  if (dataPoint.x === points[0].x) {
+                    this.setState({
+                      dataToDisplay: `${dataPoint.x} ${dataPoint.y}`
+                    });
+                  }
+                });
               }}
             />
           }
         >
           <VictoryAxis
             dependentAxis
-            tickValues={[0, 1, 2, 3, 4, 5]}
             style={{
               axis: { stroke: 'green' },
               grid: { opacity: 0 },
@@ -115,14 +97,13 @@ class Main extends React.Component {
           />
           <VictoryLine
             interpolation="natural"
-            data={data}
+            data={priceData}
             style={{
               data: { stroke: 'blue' }
             }}
           />
           <VictoryAxis
             name="x-axis"
-            tickValues={[0, 1, 2, 3, 4, 5]}
             style={{
               axis: { stroke: 'green' },
               grid: { opacity: 0 },
