@@ -54121,7 +54121,6 @@ var CrossLine = function (_React$Component) {
   _createClass(CrossLine, [{
     key: 'render',
     value: function render() {
-      console.log('rendering', this.props);
       var _props$theme$chart = this.props.theme.chart,
           height = _props$theme$chart.height,
           width = _props$theme$chart.width,
@@ -54186,9 +54185,9 @@ var Main = function (_React$Component2) {
               _ref3 = _context.sent;
               coinData = _ref3.data;
               priceData = _lodash2.default.map(coinData.price_usd, function (price) {
-                return { x: price[0], y: price[1] };
+                var time = (0, _moment2.default)(price[0]).format('hh:mm a');
+                return { x: price[0], y: price[1], time: time };
               });
-
 
               _this2.setState({
                 priceData: priceData
@@ -54229,14 +54228,14 @@ var Main = function (_React$Component2) {
             containerComponent: _react2.default.createElement(_victory.VictoryVoronoiContainer, {
               voronoiDimension: 'x',
               labels: function labels(d) {
-                return 'x: ' + d.x + ' y: ' + d.y;
+                return 'x: ' + d.time + ' y: ' + d.y;
               },
               labelComponent: _react2.default.createElement(CrossLine, null),
               onActivated: function onActivated(points, props) {
                 _lodash2.default.forEach(_this4.state.priceData, function (dataPoint, key) {
                   if (dataPoint.x === points[0].x) {
                     _this4.setState({
-                      dataToDisplay: dataPoint.x + ' ' + dataPoint.y
+                      dataToDisplay: dataPoint.time + ' $' + dataPoint.y
                     });
                   }
                 });
@@ -54245,6 +54244,9 @@ var Main = function (_React$Component2) {
           },
           _react2.default.createElement(_victory.VictoryAxis, {
             dependentAxis: true,
+            tickFormat: function tickFormat(t) {
+              return '$' + t;
+            },
             style: {
               axis: { stroke: 'green' },
               grid: { opacity: 0 },
@@ -54259,7 +54261,9 @@ var Main = function (_React$Component2) {
             }
           }),
           _react2.default.createElement(_victory.VictoryAxis, {
-            name: 'x-axis',
+            tickFormat: function tickFormat(t) {
+              return (0, _moment2.default)(t).format('hh:mm a');
+            },
             style: {
               axis: { stroke: 'green' },
               grid: { opacity: 0 },

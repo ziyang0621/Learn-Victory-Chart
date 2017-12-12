@@ -14,7 +14,6 @@ import axios from 'axios';
 
 class CrossLine extends React.Component {
   render() {
-    console.log('rendering', this.props);
     const { height, width, padding } = this.props.theme.chart;
     return (
       <svg>
@@ -50,10 +49,11 @@ class Main extends React.Component {
         end: today
       }
     });
-    const priceData = _.map(coinData.price_usd, price => {
-      return { x: price[0], y: price[1] };
-    });
 
+    const priceData = _.map(coinData.price_usd, price => {
+      const time = moment(price[0]).format('hh:mm a');
+      return { x: price[0], y: price[1], time: time };
+    });
     this.setState({
       priceData
     });
@@ -73,13 +73,13 @@ class Main extends React.Component {
           containerComponent={
             <VictoryVoronoiContainer
               voronoiDimension="x"
-              labels={d => `x: ${d.x} y: ${d.y}`}
+              labels={d => `x: ${d.time} y: ${d.y}`}
               labelComponent={<CrossLine />}
               onActivated={(points, props) => {
                 _.forEach(this.state.priceData, (dataPoint, key) => {
                   if (dataPoint.x === points[0].x) {
                     this.setState({
-                      dataToDisplay: `${dataPoint.x} ${dataPoint.y}`
+                      dataToDisplay: `${dataPoint.time} $${dataPoint.y}`
                     });
                   }
                 });
@@ -89,6 +89,9 @@ class Main extends React.Component {
         >
           <VictoryAxis
             dependentAxis
+            tickFormat={t => {
+              return `$${t}`;
+            }}
             style={{
               axis: { stroke: 'green' },
               grid: { opacity: 0 },
@@ -103,7 +106,9 @@ class Main extends React.Component {
             }}
           />
           <VictoryAxis
-            name="x-axis"
+            tickFormat={t => {
+              return moment(t).format('hh:mm a');
+            }}
             style={{
               axis: { stroke: 'green' },
               grid: { opacity: 0 },
